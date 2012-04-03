@@ -13,7 +13,7 @@ package com.dummyTerminal.ZipUtils
 		private var _zipAsset:ZipAssetDataObj;
 		private var _loader:ZipAssetLoader;
 		
-		public function ZipLoaderEvent(type:String, bubbles:Boolean = false, cancelable:Boolean = false, zipAsset:ZipAssetDataObj = null, loader:ZipAssetLoader = null) 
+		public function ZipLoaderEvent(type:String, bubbles:Boolean = false, cancelable:Boolean = false, zipAsset:ZipAssetDataObj = null) 
 		{
 			super(type, bubbles, cancelable);
 			

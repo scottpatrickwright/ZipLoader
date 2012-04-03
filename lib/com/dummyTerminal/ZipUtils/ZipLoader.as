@@ -69,7 +69,6 @@ package com.dummyTerminal.ZipUtils
 		
 		private function onZipLoadProgress(e:ProgressEvent):void 
 		{
-			trace("zip load progress... bytesLoaded: " + e.bytesLoaded + " bytes total: " + e.bytesTotal) ;
 			dispatchEvent(e);
 		}
 		
@@ -81,7 +80,6 @@ package com.dummyTerminal.ZipUtils
 		
 		private function onZipAssetLoaded(e:FZipEvent):void
 		{
-			trace("@Ziploader onZipAssetLoaded file: " + e.file.filename);
 			if (e.file.filename.indexOf(".html") > -1) return;
 			if (e.file.filename.indexOf(".txt") > -1) return;
 			
@@ -90,67 +88,23 @@ package com.dummyTerminal.ZipUtils
 		
 		private function processAsset(e:FZipEvent):void 
 		{
-			trace("@ZipLoader processAsset() filename: " + e.file.filename);
-			//trace("@ZipLoader processAsset() file.content: " + e.file.content);
-						
 			var file:FZipFile 						= e.file;
 			var loader:ZipAssetLoader				= new ZipAssetLoader();
 			loader.filename							= file.filename; //store filename of loaded asset so its accessible at INIT
 			
-			/*loader.addEventListener(Event.INIT, assetInitHandler);
-			
-			loader.addEventListener(Event.COMPLETE, completeHandler);
-            loader.addEventListener(HTTPStatusEvent.HTTP_STATUS, httpStatusHandler);
-            loader.addEventListener(Event.INIT, initHandler);
-            loader.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
-            loader.addEventListener(Event.OPEN, openHandler);
-            loader.addEventListener(ProgressEvent.PROGRESS, progressHandler);
-            loader.addEventListener(Event.UNLOAD, unLoadHandler);
-			*/
-			trace("loadingBytes for " + file.filename +"...");
-			loader.contentLoaderInfo.addEventListener(Event.INIT, dispatchLoader)
+			loader.contentLoaderInfo.addEventListener(Event.INIT, assetInitHandler)
 			loader.loadBytes(file.content);
-			//dispatchLoader(loader);
 						
 		}
 		
-		 private function completeHandler(event:Event):void {
-            trace("^^^^ completeHandler: " + event);
-        }
-
-        private function httpStatusHandler(event:HTTPStatusEvent):void {
-            trace("^^^^ httpStatusHandler: " + event);
-        }
-
-        private function initHandler(event:Event):void {
-            trace("^^^^ initHandler: " + event);
-        }
-
-        private function ioErrorHandler(event:IOErrorEvent):void {
-            trace("^^^^ ioErrorHandler: " + event);
-        }
-
-        private function openHandler(event:Event):void {
-            trace("^^^^ openHandler: " + event);
-        }
-
-        private function progressHandler(event:ProgressEvent):void {
-            trace("^^^^ progressHandler: bytesLoaded=" + event.bytesLoaded + " bytesTotal=" + event.bytesTotal);
-        }
-
-        private function unLoadHandler(event:Event):void {
-            trace("^^^^ unLoadHandler: " + event);
-        }
-		
-		private function assetInitHandler(e:DataEvent):void
+		private function assetInitHandler(e:Event):void
 		{
-			trace("@ZipLoader assetInitHandler() " + (e.target as ZipAssetLoader).filename);
-			
-			var asset:DisplayObject					= (e.target as ZipAssetLoader).content;
-			var filename:String						= (e.target as ZipAssetLoader).filename;
+			var ldr:ZipAssetLoader = e.target.loader;
+			var asset:DisplayObject					= ldr.content;
+			var filename:String						= ldr.filename;
 			var zipAssetData:ZipAssetDataObj		= new ZipAssetDataObj(filename, asset);
 			
-			(e.target as ZipAssetLoader).removeEventListener(Event.INIT, assetInitHandler);
+			ldr.removeEventListener(Event.INIT, assetInitHandler);
 			
 			dispatchAsset(zipAssetData);
 		}
@@ -160,12 +114,6 @@ package com.dummyTerminal.ZipUtils
 			trace("@ZipLoader dispatchAsset() " + assetData.filename);
 			dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_ASSET_READY, false, false, assetData));
 			
-		}
-		
-		private function dispatchLoader(e:Event):void
-		{
-			var ldr:ZipAssetLoader = e.target.loader;
-			dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_ASSET_READY, false, false, null, ldr));
 		}
 		
 		private function onZipLoadComplete(e:Event):void 

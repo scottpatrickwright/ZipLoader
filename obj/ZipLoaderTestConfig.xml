@@ -20,16 +20,16 @@
     </define>
     <verbose-stacktraces>true</verbose-stacktraces>
     <source-path append="true">
-      <path-element>C:\Users\Scott\Documents\Projects\decksi\resources\ZipLoaderTest\src</path-element>
-      <path-element>C:\Users\Scott\Documents\Projects\decksi\resources\ZipLoaderTest\lib</path-element>
+      <path-element>C:\Users\Scott\Documents\Projects\ZipLoader\src</path-element>
+      <path-element>C:\Users\Scott\Documents\Projects\ZipLoader\lib</path-element>
       <path-element>C:\Program Files (x86)\FlashDevelop\Library\AS3\classes</path-element>
     </source-path>
     <library-path append="true">
-      <path-element>C:\Users\Scott\Documents\Projects\decksi\resources\ZipLoaderTest\swc\fzip.swc</path-element>
+      <path-element>C:\Users\Scott\Documents\Projects\ZipLoader\swc\fzip.swc</path-element>
     </library-path>
   </compiler>
   <file-specs>
-    <path-element>C:\Users\Scott\Documents\Projects\decksi\resources\ZipLoaderTest\src\Main.as</path-element>
+    <path-element>C:\Users\Scott\Documents\Projects\ZipLoader\src\Main.as</path-element>
   </file-specs>
   <default-background-color>#FFFFFF</default-background-color>
   <default-frame-rate>30</default-frame-rate>

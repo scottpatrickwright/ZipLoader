@@ -1,5 +1,6 @@
 package 
 {
+	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import com.dummyTerminal.ZipUtils.ZipLoader;
@@ -57,11 +58,13 @@ package
 		
 		private function zipAssetReadyHandler(e:ZipLoaderEvent):void 
 		{
-			trace("@Main zipAssetReadyHandler " + e.loader.filename + " ready");
+			//trace("@Main zipAssetReadyHandler " + e.loader.filename + " ready");
+			trace(e.zipAsset.filename + " is ready. it is type " + e.zipAsset.type);
+			var asset:DisplayObject = e.zipAsset.content;
 			
-			e.loader.x = 18 * (_count % 32);
-			e.loader.y = 18 * Math.floor(_count / 32) + 20;
-			addChild(e.loader);
+			asset.x = 18 * (_count % 32);
+			asset.y = 18 * Math.floor(_count / 32) + 20;
+			addChild(asset);
 			
 			_count ++;
 			
