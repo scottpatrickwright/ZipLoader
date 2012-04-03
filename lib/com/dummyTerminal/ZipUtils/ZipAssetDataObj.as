@@ -32,9 +32,9 @@ package com.dummyTerminal.ZipUtils
 		public function get type():Class 
 		{
 			if (_type != null) return _type; 
-			if (_filename.indexOf(".mp3") || _filename.indexOf(".wav")) 							return Sound; 
-			if (_filename.indexOf(".png") || _filename.indexOf(".jpg")|| _filename.indexOf(".gif")) return Bitmap; 
-			if (_filename.indexOf(".swf")) 															return MovieClip; 
+			if (_filename.indexOf(".mp3") > -1 || _filename.indexOf(".wav") > -1) 										return Sound; 
+			if (_filename.indexOf(".png") > -1 || _filename.indexOf(".jpg") > -1 || _filename.indexOf(".gif") > -1) 	return Bitmap; 
+			if (_filename.indexOf(".swf") > -1) 																		return MovieClip; 
 						
 			return _type;
 		}
