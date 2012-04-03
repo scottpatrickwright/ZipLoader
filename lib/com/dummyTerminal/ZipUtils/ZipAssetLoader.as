@@ -23,6 +23,12 @@ package com.dummyTerminal.ZipUtils
 		}
 		
 		
+		public function destroy():void
+		{
+			close();
+			delete this;
+		}
+		
 		
 	}
 

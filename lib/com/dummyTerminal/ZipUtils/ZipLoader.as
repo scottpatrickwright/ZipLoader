@@ -16,19 +16,19 @@ package com.dummyTerminal.ZipUtils
 	
 	public class ZipLoader extends EventDispatcher 
 	{
-		private static const MAX_ASSETS_TO_PROCESS_AT_A_TIME	:uint	=	32;
+		protected static const MAX_ASSETS_TO_PROCESS_AT_A_TIME	:uint							=	32;
 				
-		private var _zip					:FZip;
-		private var _currentFileIndex		:uint		= 0
-		private var _zipFileUrl				:String		= "";
+		protected var _zip										:FZip;
+		protected var _zipFileUrl								:String							= "";
 		
-		private var complete				:Boolean	= false;
-		private var processing				:Boolean	= false;
+		protected var allZipAssetLoaders						:Vector.<ZipAssetLoader>		= new Vector.<ZipAssetLoader>();
+		
+		protected var complete									:Boolean						= false;
+		protected var processing								:Boolean						= false;
 		
 		public function ZipLoader() 
 		{
 			super();
-			trace("new ZipLoader()");
 		}
 		
 		public function reset():void 
@@ -42,15 +42,13 @@ package com.dummyTerminal.ZipUtils
 			if (_zip.hasEventListener(FZipEvent.FILE_LOADED)) 		_zip.removeEventListener(FZipEvent.FILE_LOADED, onZipAssetLoaded);
 			if (_zip.hasEventListener(Event.OPEN)) 					_zip.removeEventListener(Event.OPEN, onZipOpen);
 			if (_zip.hasEventListener(Event.COMPLETE)) 				_zip.removeEventListener(Event.COMPLETE, onZipLoadComplete);
-			if ( hasEventListener(Event.ENTER_FRAME)) 				removeEventListener(Event.ENTER_FRAME, parseZipAssets);
+			if (hasEventListener(Event.ENTER_FRAME)) 				removeEventListener(Event.ENTER_FRAME, parseZipAssets);
 			
 			processing = false;
 		}
 		
 		public function loadZipFile(zipFileUrl:String = null):void 
 		{
-			trace("loadZipFile(): " + zipFileUrl);
-			
 			if (processing) return;
 			
 			processing = true;
@@ -64,10 +62,9 @@ package com.dummyTerminal.ZipUtils
 			
 			
 			_zip.load(new URLRequest(zipFileUrl));
-			trace("loading...");
 		}
 		
-		private function onZipLoadProgress(e:ProgressEvent):void 
+		protected function onZipLoadProgress(e:ProgressEvent):void 
 		{
 			dispatchEvent(e);
 		}
@@ -75,31 +72,42 @@ package com.dummyTerminal.ZipUtils
 		public function destroy():void
 		{
 			reset();
+			clearLoaders();
 			delete this;
 		}
 		
-		private function onZipAssetLoaded(e:FZipEvent):void
+		protected function clearLoaders():void
 		{
+			var ldr:ZipAssetLoader;
+			
+			while (allZipAssetLoaders.length) 
+			{
+				allZipAssetLoaders.pop().destroy();
+			}
+		}
+		
+		protected function onZipAssetLoaded(e:FZipEvent):void
+		{
+			//TODO handle valid file types better
 			if (e.file.filename.indexOf(".html") > -1) return;
 			if (e.file.filename.indexOf(".txt") > -1) return;
 			
 			processAsset(e);
 		}
 		
-		private function processAsset(e:FZipEvent):void 
+		protected function processAsset(e:FZipEvent):void 
 		{
 			var file:FZipFile 						= e.file;
-			var loader:ZipAssetLoader				= new ZipAssetLoader();
+			var loader:ZipAssetLoader				= new ZipAssetLoader(); //custom loader allows extra props to travel with event obj
 			loader.filename							= file.filename; //store filename of loaded asset so its accessible at INIT
 			
 			loader.contentLoaderInfo.addEventListener(Event.INIT, assetInitHandler)
 			loader.loadBytes(file.content);
-						
 		}
 		
-		private function assetInitHandler(e:Event):void
+		protected function assetInitHandler(e:Event):void
 		{
-			var ldr:ZipAssetLoader = e.target.loader;
+			var ldr:ZipAssetLoader 					= e.target.loader;
 			var asset:DisplayObject					= ldr.content;
 			var filename:String						= ldr.filename;
 			var zipAssetData:ZipAssetDataObj		= new ZipAssetDataObj(filename, asset);
@@ -109,84 +117,34 @@ package com.dummyTerminal.ZipUtils
 			dispatchAsset(zipAssetData);
 		}
 		
-		private function dispatchAsset(assetData:ZipAssetDataObj):void
+		protected function dispatchAsset(assetData:ZipAssetDataObj):void
 		{
-			trace("@ZipLoader dispatchAsset() " + assetData.filename);
 			dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_ASSET_READY, false, false, assetData));
-			
 		}
 		
-		private function onZipLoadComplete(e:Event):void 
+		protected function onZipLoadComplete(e:Event):void 
 		{
 			dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_LOAD_COMPLETE));
 		}
 		
-		private function onZipComplete(e:Event = null):void 
+		protected function onZipComplete(e:Event = null):void 
 		{
-			trace("/////////// onZipComplete ////////////");
 			complete = true;
 			removeEventListener(Event.ENTER_FRAME, parseZipAssets);
 			dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_PARSE_COMPLETE));
 		}
 		
-		private function onZipOpen(e:Event):void 
+		protected function onZipOpen(e:Event):void 
 		{
-			trace("/////////// onZipOpen ////////////");
 			startParseZip();
 		}
 		
 		
-		private function onZipParseError(e:FZipErrorEvent):void 
+		protected function onZipParseError(e:FZipErrorEvent):void 
 		{
 			trace("@ZipLoader: Error on Parse Zip File: "  + e.text);
 			dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_PARSE_ERROR));
 		}
-		
-		private function startParseZip():void 
-		{
-			trace("start parseing zip...")
-			//start loop
-			//addEventListener(Event.ENTER_FRAME, parseZipAssets); //frame loop needed to check for new asset availability as no native event is fired
-		}
-		
-		private function parseZipAssets(e:Event = null):void 
-		{
-			trace("parseZipAssets...");
-			var file:FZipFile;
-			var loader:Loader;
-			var asset:DisplayObject;
-			var zipAssetData:ZipAssetDataObj;
-			var type:Class;
-			
-			for (var i:uint = 0; i < MAX_ASSETS_TO_PROCESS_AT_A_TIME; i++) 
-			{
-				if (_zip.getFileCount() >= _currentFileIndex) 
-				{
-					trace("//// parse zip asset: " + _currentFileIndex);
-					file	 			= _zip.getFileAt(_currentFileIndex);
-					loader 				= new Loader();
-					loader.loadBytes(file.content);
-					asset				= loader.content;
-					isSound(file.filename) ? type = Sound : type = DisplayObject;
-					
-					zipAssetData		= new ZipAssetDataObj(file.filename, asset);
-										
-					dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_ASSET_READY, false, false, zipAssetData));
-					_currentFileIndex ++;
-					trace(file.filename + " processed");
-					continue;
-				} 
-				onZipComplete();
-				break;
-				
-			}
-		}
-		
-		//searches file name for know audio extensions
-		private function isSound(filename:String):Boolean
-		{
-			return filename.indexOf(".mp3") > -1 || filename.indexOf(".wav") > -1; 
-			
-		}
+	
 	}
 }
