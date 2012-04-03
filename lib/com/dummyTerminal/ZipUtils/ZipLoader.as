@@ -34,7 +34,6 @@ package com.dummyTerminal.ZipUtils
 		public function reset():void 
 		{
 			_zip = null;
-			_currentFileIndex = 0;
 			_zipFileUrl = "";
 			complete = false;
 			
@@ -42,7 +41,6 @@ package com.dummyTerminal.ZipUtils
 			if (_zip.hasEventListener(FZipEvent.FILE_LOADED)) 		_zip.removeEventListener(FZipEvent.FILE_LOADED, onZipAssetLoaded);
 			if (_zip.hasEventListener(Event.OPEN)) 					_zip.removeEventListener(Event.OPEN, onZipOpen);
 			if (_zip.hasEventListener(Event.COMPLETE)) 				_zip.removeEventListener(Event.COMPLETE, onZipLoadComplete);
-			if (hasEventListener(Event.ENTER_FRAME)) 				removeEventListener(Event.ENTER_FRAME, parseZipAssets);
 			
 			processing = false;
 		}
@@ -130,19 +128,16 @@ package com.dummyTerminal.ZipUtils
 		protected function onZipComplete(e:Event = null):void 
 		{
 			complete = true;
-			removeEventListener(Event.ENTER_FRAME, parseZipAssets);
 			dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_PARSE_COMPLETE));
 		}
 		
 		protected function onZipOpen(e:Event):void 
 		{
-			startParseZip();
+			dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_OPEN));
 		}
-		
-		
+				
 		protected function onZipParseError(e:FZipErrorEvent):void 
 		{
-			trace("@ZipLoader: Error on Parse Zip File: "  + e.text);
 			dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_PARSE_ERROR));
 		}
 	

@@ -5,6 +5,7 @@ package com.dummyTerminal.ZipUtils
 		
 	public class ZipLoaderEvent extends Event 
 	{
+		public static const ZIP_OPEN				:String 		= "zipOpen";
 		public static const ZIP_ASSET_READY			:String 		= "zipAssetReady";
 		public static const ZIP_LOAD_COMPLETE		:String			= "zipLoadComplete";
 		public static const ZIP_PARSE_COMPLETE		:String 		= "zipParseComplete";
