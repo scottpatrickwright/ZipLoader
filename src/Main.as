@@ -3,6 +3,7 @@ package
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.events.ProgressEvent;
 	import com.dummyTerminal.ZipUtils.ZipLoader;
 	import com.dummyTerminal.ZipUtils.ZipLoaderEvent;
 	import com.dummyTerminal.ZipUtils.ZipAssetDataObj;
@@ -33,12 +34,24 @@ package
 			
 			_zip = new ZipLoader();
 			
-			_zip.addEventListener(ZipLoaderEvent.ZIP_ASSET_READY, zipAssetReadyHandler);
+			_zip.addEventListener(ZipLoaderEvent.ZIP_OPEN, zipOpenHandler);
+			_zip.addEventListener(ProgressEvent.PROGRESS, zipLoadProgressHandler);
+			_zip.addEventListener(ZipLoaderEvent.ZIP_ASSET_READY, zipAssetReadyHandler)
 			_zip.addEventListener(ZipLoaderEvent.ZIP_LOAD_COMPLETE, zipLoadCompleteHandler);
 			_zip.addEventListener(ZipLoaderEvent.ZIP_PARSE_COMPLETE, zipParseCompleteHandler);
 			_zip.addEventListener(ZipLoaderEvent.ZIP_PARSE_ERROR, zipParseErrorHandler);
 			
 			_zip.loadZipFile(ZIP_FILE_URL);
+		}
+		
+		private function zipLoadProgressHandler(e:ProgressEvent):void 
+		{
+			trace("@main Load Progress... " + (e.bytesLoaded/e.bytesTotal));
+		}
+		
+		private function zipOpenHandler(e:ZipLoaderEvent):void 
+		{
+			trace("@Main zipOpenHandler");
 		}
 		
 		private function zipParseErrorHandler(e:ZipLoaderEvent):void 
@@ -58,8 +71,7 @@ package
 		
 		private function zipAssetReadyHandler(e:ZipLoaderEvent):void 
 		{
-			//trace("@Main zipAssetReadyHandler " + e.loader.filename + " ready");
-			trace(e.zipAsset.filename + " is ready. it is type " + e.zipAsset.type);
+			//trace(e.zipAsset.filename + " is ready. it is type " + e.zipAsset.type);
 			var asset:DisplayObject = e.zipAsset.content;
 			
 			asset.x = 18 * (_count % 32);

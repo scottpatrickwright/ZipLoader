@@ -16,6 +16,7 @@ package com.dummyTerminal.ZipUtils
 	
 	public class ZipLoader extends EventDispatcher 
 	{
+		protected static const VALID_FILE_EXTENSIONS			:Vector.<String>				= new Vector.<String>[".png", ".gif", ".jpg", ".mp3", ".wav"];
 		protected static const MAX_ASSETS_TO_PROCESS_AT_A_TIME	:uint							=	32;
 				
 		protected var _zip										:FZip;
@@ -91,6 +92,11 @@ package com.dummyTerminal.ZipUtils
 			if (e.file.filename.indexOf(".txt") > -1) return;
 			
 			processAsset(e);
+		}
+		
+		protected function isValidFileExtension():Boolean
+		{
+			//check against vector here
 		}
 		
 		protected function processAsset(e:FZipEvent):void 
