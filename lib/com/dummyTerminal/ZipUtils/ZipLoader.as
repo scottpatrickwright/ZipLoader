@@ -25,7 +25,7 @@ package com.dummyTerminal.ZipUtils
 	
 	public class ZipLoader extends EventDispatcher 
 	{
-		protected static const VALID_FILE_EXTENSIONS			:Array							= [".png", ".gif", ".jpg", ".mp3", ".wav"];
+		protected static const VALID_FILE_EXTENSIONS			:Array							= [".png", ".gif", ".jpg", ".swf"]; //audio & video not currently supported
 		
 		protected var _zip										:FZip;
 		protected var _zipFileUrl								:String							= "";
@@ -101,7 +101,11 @@ package com.dummyTerminal.ZipUtils
 		
 		protected function onZipAssetLoaded(e:FZipEvent):void
 		{
-			if(!isValidFileExtension(e.file.filename)) return;
+			if (!isValidFileExtension(e.file.filename))
+			{
+				trace("@ZipLoader: Unsupported file type: " + e.file.filename + " supported file types are " + VALID_FILE_EXTENSIONS);
+				return;
+			}
 			processAsset(e);
 		}
 		
