@@ -32,8 +32,12 @@ package com.dummyTerminal.ZipUtils
 		
 		protected var allZipAssetLoaders						:Vector.<ZipAssetLoader>		= new Vector.<ZipAssetLoader>();
 		
+		protected var totalFiles								:uint							= 0;
+		protected var filesProcessed							:uint							= 0;
+		
 		protected var complete									:Boolean						= false;
 		protected var processing								:Boolean						= false;
+		protected var loadComplete								:Boolean						= false;
 		
 		public function ZipLoader() 
 		{
@@ -56,8 +60,7 @@ package com.dummyTerminal.ZipUtils
 			_zip.addEventListener(Event.COMPLETE, onZipLoadComplete);
 			_zip.addEventListener(FZipEvent.FILE_LOADED, onZipAssetLoaded);
 			_zip.addEventListener(FZipErrorEvent.PARSE_ERROR, onZipParseError);
-			
-			
+						
 			_zip.load(new URLRequest(zipFileUrl));
 		}
 		
@@ -66,11 +69,14 @@ package com.dummyTerminal.ZipUtils
 			_zip = null;
 			_zipFileUrl = "";
 			complete = false;
+			loadComplete = false;
 			
 			if (_zip.hasEventListener(FZipErrorEvent.PARSE_ERROR)) 	_zip.removeEventListener(FZipErrorEvent.PARSE_ERROR, onZipParseError);
 			if (_zip.hasEventListener(FZipEvent.FILE_LOADED)) 		_zip.removeEventListener(FZipEvent.FILE_LOADED, onZipAssetLoaded);
 			if (_zip.hasEventListener(Event.OPEN)) 					_zip.removeEventListener(Event.OPEN, onZipOpen);
 			if (_zip.hasEventListener(Event.COMPLETE)) 				_zip.removeEventListener(Event.COMPLETE, onZipLoadComplete);
+			
+			clearLoaders();
 			
 			processing = false;
 		}
@@ -78,7 +84,6 @@ package com.dummyTerminal.ZipUtils
 		public function destroy():void
 		{
 			reset();
-			clearLoaders();
 			delete this;
 		}
 		
@@ -101,6 +106,10 @@ package com.dummyTerminal.ZipUtils
 		
 		protected function onZipAssetLoaded(e:FZipEvent):void
 		{
+			filesProcessed ++;
+			
+			trace("zipAssetLoaded " + filesProcessed);
+			
 			if (!isValidFileExtension(e.file.filename))
 			{
 				trace("@ZipLoader: Unsupported file type: " + e.file.filename + " supported file types are " + VALID_FILE_EXTENSIONS);
@@ -135,6 +144,10 @@ package com.dummyTerminal.ZipUtils
 			ldr.removeEventListener(Event.INIT, assetInitHandler);
 			
 			dispatchAsset(zipAssetData);
+			
+			trace("total files: " + totalFiles + " filesProcessed: " + filesProcessed);
+			
+			if (totalFiles == filesProcessed && loadComplete) onZipComplete();
 		}
 		
 		private function assetIOErrorHandler(e:IOErrorEvent):void 
@@ -144,6 +157,8 @@ package com.dummyTerminal.ZipUtils
 		
 		protected function onZipLoadComplete(e:Event):void 
 		{
+			totalFiles = _zip.getFileCount();
+			loadComplete = true;
 			dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_LOAD_COMPLETE));
 		}
 		

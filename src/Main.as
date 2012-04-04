@@ -62,7 +62,7 @@ package
 		
 		private function zipParseCompleteHandler(e:ZipLoaderEvent):void 
 		{
-			trace("@Main zipParseCompleteHandler");
+			trace("@Main zipParseCompleteHandler////////////////");
 		}
 		
 		private function zipLoadCompleteHandler(e:ZipLoaderEvent):void 
