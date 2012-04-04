@@ -13,11 +13,20 @@ package com.dummyTerminal.ZipUtils
 	import flash.net.URLRequest;
 	import flash.events.ProgressEvent;
 	
+	/*
+	*
+	* To support loading sound files from the zip: an object that supports 'loading' a sound from a Byte Array is required.
+	* this functionality is only supported in Flash Player 11.2 & higher (At the time of writing it is in Beta release only)
+	* Method: Sound.loadCompressedDataFromByteArray() should provide required functionality
+	* Recommend inspecting the extention of the filename for audio file types and switching at processAsset() to appropriate loader type
+	* Which will allow you to extract & dispatch the properly typed media at the loader Init event handler
+	* 
+	*/
 	
 	public class ZipLoader extends EventDispatcher 
 	{
 		protected static const VALID_FILE_EXTENSIONS			:Array							= [".png", ".gif", ".jpg", ".mp3", ".wav"];
-						
+		
 		protected var _zip										:FZip;
 		protected var _zipFileUrl								:String							= "";
 		
@@ -84,8 +93,6 @@ package com.dummyTerminal.ZipUtils
 				
 		protected function clearLoaders():void
 		{
-			var ldr:ZipAssetLoader;
-			
 			while (allZipAssetLoaders.length) 
 			{
 				allZipAssetLoaders.pop().destroy();
@@ -105,6 +112,7 @@ package com.dummyTerminal.ZipUtils
 			loader.filename							= file.filename; //store filename of loaded asset so its accessible at INIT
 			
 			loader.contentLoaderInfo.addEventListener(Event.INIT, assetInitHandler)
+			loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, assetIOErrorHandler)
 			loader.loadBytes(file.content);
 		}
 		
@@ -125,6 +133,11 @@ package com.dummyTerminal.ZipUtils
 			dispatchAsset(zipAssetData);
 		}
 		
+		private function assetIOErrorHandler(e:IOErrorEvent):void 
+		{
+			trace("assetIOErrorHandler() " + e.text);
+		}
+		
 		protected function onZipLoadComplete(e:Event):void 
 		{
 			dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_LOAD_COMPLETE));
@@ -143,6 +156,7 @@ package com.dummyTerminal.ZipUtils
 				
 		protected function onZipParseError(e:FZipErrorEvent):void 
 		{
+			trace("zip paresing error: " + e.text);
 			dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_PARSE_ERROR));
 		}
 		
