@@ -17,6 +17,7 @@ package
 	public class Main extends Sprite 
 	{
 		static public const ZIP_FILE_URL:String = "assets/famfamfam_silk_icons_v013.zip";
+		//static public const ZIP_FILE_URL:String = "assets/assets.zip";
 		
 		private var _zip:ZipLoader;
 		private var _count:int = 0;

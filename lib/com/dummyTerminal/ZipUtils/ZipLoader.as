@@ -16,9 +16,8 @@ package com.dummyTerminal.ZipUtils
 	
 	public class ZipLoader extends EventDispatcher 
 	{
-		protected static const VALID_FILE_EXTENSIONS			:Vector.<String>				= new Vector.<String>[".png", ".gif", ".jpg", ".mp3", ".wav"];
-		protected static const MAX_ASSETS_TO_PROCESS_AT_A_TIME	:uint							=	32;
-				
+		protected static const VALID_FILE_EXTENSIONS			:Array							= [".png", ".gif", ".jpg", ".mp3", ".wav"];
+						
 		protected var _zip										:FZip;
 		protected var _zipFileUrl								:String							= "";
 		
@@ -32,19 +31,9 @@ package com.dummyTerminal.ZipUtils
 			super();
 		}
 		
-		public function reset():void 
-		{
-			_zip = null;
-			_zipFileUrl = "";
-			complete = false;
-			
-			if (_zip.hasEventListener(FZipErrorEvent.PARSE_ERROR)) 	_zip.removeEventListener(FZipErrorEvent.PARSE_ERROR, onZipParseError);
-			if (_zip.hasEventListener(FZipEvent.FILE_LOADED)) 		_zip.removeEventListener(FZipEvent.FILE_LOADED, onZipAssetLoaded);
-			if (_zip.hasEventListener(Event.OPEN)) 					_zip.removeEventListener(Event.OPEN, onZipOpen);
-			if (_zip.hasEventListener(Event.COMPLETE)) 				_zip.removeEventListener(Event.COMPLETE, onZipLoadComplete);
-			
-			processing = false;
-		}
+		/*
+		 *  Public Interface
+		 */////////////////////////////////////////////////////////
 		
 		public function loadZipFile(zipFileUrl:String = null):void 
 		{
@@ -63,9 +52,18 @@ package com.dummyTerminal.ZipUtils
 			_zip.load(new URLRequest(zipFileUrl));
 		}
 		
-		protected function onZipLoadProgress(e:ProgressEvent):void 
+		public function reset():void 
 		{
-			dispatchEvent(e);
+			_zip = null;
+			_zipFileUrl = "";
+			complete = false;
+			
+			if (_zip.hasEventListener(FZipErrorEvent.PARSE_ERROR)) 	_zip.removeEventListener(FZipErrorEvent.PARSE_ERROR, onZipParseError);
+			if (_zip.hasEventListener(FZipEvent.FILE_LOADED)) 		_zip.removeEventListener(FZipEvent.FILE_LOADED, onZipAssetLoaded);
+			if (_zip.hasEventListener(Event.OPEN)) 					_zip.removeEventListener(Event.OPEN, onZipOpen);
+			if (_zip.hasEventListener(Event.COMPLETE)) 				_zip.removeEventListener(Event.COMPLETE, onZipLoadComplete);
+			
+			processing = false;
 		}
 		
 		public function destroy():void
@@ -75,6 +73,15 @@ package com.dummyTerminal.ZipUtils
 			delete this;
 		}
 		
+		/*
+		 * Event Handlers
+		 */////////////////////////////////////////////////////////
+		
+		protected function onZipLoadProgress(e:ProgressEvent):void 
+		{
+			dispatchEvent(e);
+		}
+				
 		protected function clearLoaders():void
 		{
 			var ldr:ZipAssetLoader;
@@ -87,16 +94,8 @@ package com.dummyTerminal.ZipUtils
 		
 		protected function onZipAssetLoaded(e:FZipEvent):void
 		{
-			//TODO handle valid file types better
-			if (e.file.filename.indexOf(".html") > -1) return;
-			if (e.file.filename.indexOf(".txt") > -1) return;
-			
+			if(!isValidFileExtension(e.file.filename)) return;
 			processAsset(e);
-		}
-		
-		protected function isValidFileExtension():Boolean
-		{
-			//check against vector here
 		}
 		
 		protected function processAsset(e:FZipEvent):void 
@@ -109,6 +108,11 @@ package com.dummyTerminal.ZipUtils
 			loader.loadBytes(file.content);
 		}
 		
+		protected function dispatchAsset(assetData:ZipAssetDataObj):void
+		{
+			dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_ASSET_READY, false, false, assetData));
+		}
+		
 		protected function assetInitHandler(e:Event):void
 		{
 			var ldr:ZipAssetLoader 					= e.target.loader;
@@ -119,11 +123,6 @@ package com.dummyTerminal.ZipUtils
 			ldr.removeEventListener(Event.INIT, assetInitHandler);
 			
 			dispatchAsset(zipAssetData);
-		}
-		
-		protected function dispatchAsset(assetData:ZipAssetDataObj):void
-		{
-			dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_ASSET_READY, false, false, assetData));
 		}
 		
 		protected function onZipLoadComplete(e:Event):void 
@@ -146,6 +145,28 @@ package com.dummyTerminal.ZipUtils
 		{
 			dispatchEvent(new ZipLoaderEvent(ZipLoaderEvent.ZIP_PARSE_ERROR));
 		}
-	
+		
+		/*
+		 *  Utilities
+		 */////////////////////////////////////////////////////////
+		
+		protected function isValidFileExtension(filename:String):Boolean
+		{
+			var result:Boolean = false;
+			var extension:String = filename.substr(filename.lastIndexOf("."), 4);
+			
+			for (var i:int = 0; i < VALID_FILE_EXTENSIONS.length; i++) 
+			{
+				if (VALID_FILE_EXTENSIONS[i] == extension)
+				{
+					result = true;
+					break;
+				}
+			}
+			
+			trace("does " + filename + " have a valid ext?: " + result);
+			
+			return result;
+		}
 	}
 }
