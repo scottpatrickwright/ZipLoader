@@ -12,7 +12,7 @@ package com.dummyTerminal.ZipUtils
 	import flash.media.Sound;
 	import flash.net.URLRequest;
 	import flash.events.ProgressEvent;
-	
+		
 	/*
 	*
 	* To support loading sound files from the zip: an object that supports 'loading' a sound from a Byte Array is required.
@@ -106,13 +106,12 @@ package com.dummyTerminal.ZipUtils
 		
 		protected function onZipAssetLoaded(e:FZipEvent):void
 		{
-			filesProcessed ++;
-			
-			trace("zipAssetLoaded " + filesProcessed);
+			//trace("zipAssetLoaded " + filesProcessed);
 			
 			if (!isValidFileExtension(e.file.filename))
 			{
 				trace("@ZipLoader: Unsupported file type: " + e.file.filename + " supported file types are " + VALID_FILE_EXTENSIONS);
+				filesProcessed ++;
 				return;
 			}
 			processAsset(e);
@@ -145,8 +144,9 @@ package com.dummyTerminal.ZipUtils
 			
 			dispatchAsset(zipAssetData);
 			
-			trace("total files: " + totalFiles + " filesProcessed: " + filesProcessed);
+			//trace("total files: " + totalFiles + " filesProcessed: " + filesProcessed);
 			
+			filesProcessed ++;
 			if (totalFiles == filesProcessed && loadComplete) onZipComplete();
 		}
 		
@@ -197,9 +197,10 @@ package com.dummyTerminal.ZipUtils
 				}
 			}
 			
-			trace("does " + filename + " have a valid ext?: " + result);
+			//trace("does " + filename + " have a valid ext?: " + result);
 			
 			return result;
 		}
 	}
+
 }
